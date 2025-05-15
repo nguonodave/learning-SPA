@@ -1,79 +1,108 @@
-export function setupAuthUI(setHeadingText) {
-    const loginForm = document.getElementById("login-form")
-    const registerForm = document.getElementById("register-form")
-    const showLoginBtn = document.getElementById("show-login")
-    const showRegisterBtn = document.getElementById("show-register")
-    const logoutBtn = document.getElementById("logout-btn")
-
-    showLoginBtn.addEventListener("click", function () {
-        loginForm.style.display = "block"
-        registerForm.style.display = "none"
-        setHeadingText("Login")
-    })
-
-    showRegisterBtn.addEventListener("click", function () {
-        registerForm.style.display = "block"
-        loginForm.style.display = "none"
-        setHeadingText("Register")
-    })
-
-    loginForm.addEventListener("submit", async function (e) {
-        e.preventDefault()
-        const username = document.getElementById("login-username").value
-        const password = document.getElementById("login-password").value
-
-        const res = await fetch("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
+export function setupAuthForms() {
+    const registerForm = document.getElementById('register')
+    const loginForm = document.getElementById('login')
+    const logoutBtn = document.getElementById('logout-btn')
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const username = document.getElementById('reg-username').value
+            const password = document.getElementById('reg-password').value
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                
+                if (!response.ok) {
+                    const error = await response.json()
+                    document.getElementById('register-error').textContent = error.message || 'Registration failed'
+                    return
+                }
+                
+                // On successful registration, show login form
+                document.getElementById('register-error').textContent = ''
+                document.getElementById('reg-username').value = ''
+                document.getElementById('reg-password').value = ''
+                alert('Registration successful! Please login.')
+            } catch (err) {
+                document.getElementById('register-error').textContent = 'Network error'
+            }
         })
-
-        if (res.ok) {
-            localStorage.setItem("username", username)
-            setHeadingText(`Welcome, ${username}`)
-            loginForm.style.display = "none"
-            document.getElementById("auth-toggle").style.display = "none"
-            logoutBtn.style.display = "inline"
-        } else {
-            alert("Login failed")
-        }
-    })
-
-    registerForm.addEventListener("submit", async function (e) {
-        e.preventDefault()
-        const username = document.getElementById("register-username").value
-        const password = document.getElementById("register-password").value
-
-        const res = await fetch("/api/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const username = document.getElementById('login-username').value
+            const password = document.getElementById('login-password').value
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                
+                if (!response.ok) {
+                    const error = await response.json()
+                    document.getElementById('login-error').textContent = error.message || 'Login failed'
+                    return
+                }
+                
+                // On successful login, show app content
+                document.getElementById('login-error').textContent = ''
+                document.getElementById('auth-forms').classList.add('hidden')
+                document.getElementById('app-content').classList.remove('hidden')
+                checkAuthStatus()
+            } catch (err) {
+                document.getElementById('login-error').textContent = 'Network error'
+            }
         })
+    }
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                })
+                
+                if (!response.ok) {
+                    throw new Error('Logout failed')
+                }
+                
+                // On successful logout, show auth forms
+                document.getElementById('auth-forms').classList.remove('hidden')
+                document.getElementById('app-content').classList.add('hidden')
+            } catch (err) {
+                alert('Failed to logout')
+            }
+        })
+    }
+}
 
-        if (res.ok) {
-            alert("Registered successfully. You can now log in.")
-            showLoginBtn.click()
+export async function checkAuthStatus() {
+    try {
+        const response = await fetch('/api/check-auth', {
+            method: 'GET',
+            credentials: 'include'
+        })
+        
+        if (response.ok) {
+            document.getElementById('auth-forms').classList.add('hidden')
+            document.getElementById('app-content').classList.remove('hidden')
         } else {
-            alert("Registration failed: Username may already be taken.")
+            document.getElementById('auth-forms').classList.remove('hidden')
+            document.getElementById('app-content').classList.add('hidden')
         }
-    })
-
-    logoutBtn.addEventListener("click", function () {
-        localStorage.removeItem("username")
-        setHeadingText("PostApp - Logged out view")
-        logoutBtn.style.display = "none"
-        document.getElementById("auth-toggle").style.display = "block"
-    })
-
-    // On load, check session
-    const user = localStorage.getItem("username")
-    if (user) {
-        setHeadingText(`Welcome, ${user}`)
-        loginForm.style.display = "none"
-        registerForm.style.display = "none"
-        document.getElementById("auth-toggle").style.display = "none"
-        logoutBtn.style.display = "inline"
-    } else {
-        setHeadingText("PostApp - Logged out view")
+    } catch (err) {
+        console.error('Auth check failed:', err)
     }
 }
