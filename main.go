@@ -23,6 +23,7 @@ func main() {
 	http.HandleFunc("/api/register", handlers.RegisterHandler(database))
 	http.HandleFunc("/api/login", handlers.LoginHandler(database))
 	http.HandleFunc("/api/logout", handlers.LogoutHandler(database))
+	http.HandleFunc("/api/check-auth", handlers.AuthCheckHandler(database))
 
 	// Serve frontend (JS modules, HTML)
 	http.Handle("/", http.FileServer(http.Dir("./frontend")))

@@ -157,3 +157,37 @@ func LogoutHandler(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(map[string]string{"message": "Logout successful"})
 	}
 }
+
+func AuthCheckHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			http.Error(w, "Not authenticated", http.StatusUnauthorized)
+			return
+		}
+
+		var session Session
+		err = db.QueryRow("SELECT id, user_id, expires_at FROM sessions WHERE id = ?", cookie.Value).
+			Scan(&session.ID, &session.UserID, &session.ExpiresAt)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Invalid session", http.StatusUnauthorized)
+			return
+		} else if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+
+		if time.Now().After(session.ExpiresAt) {
+			http.Error(w, "Session expired", http.StatusUnauthorized)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Authenticated"})
+	}
+}
