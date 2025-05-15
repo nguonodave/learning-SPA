@@ -1,3 +1,4 @@
 import { setHeadingText } from './js/ui.js'
+import { setupAuthUI } from './js/auth.js'
 
-setHeadingText("PostApp - Logged out view")
+setupAuthUI(setHeadingText)
