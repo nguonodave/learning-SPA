@@ -41,3 +41,27 @@ export function setupPostForm() {
         })
     }
 }
+
+function renderPosts(posts) {
+    const postsContainer = document.getElementById('posts-container')
+    if (!postsContainer) return
+    
+    if (posts.length === 0) {
+        postsContainer.innerHTML = '<p>No posts yet. Be the first to post!</p>'
+        return
+    }
+    
+    postsContainer.innerHTML = posts.map(post => `
+        <div class="post" data-id="${post.id}">
+            <h3>${post.username}</h3>
+            <p>${post.content}</p>
+            ${post.image_path ? `<img src="/uploads/${post.image_path}" alt="Post image" style="max-width: 100%;">` : ''}
+            <small>${new Date(post.created_at).toLocaleString()}</small>
+            <div class="post-actions">
+                <button class="like-btn">Like</button>
+                <button class="comment-btn">Comment</button>
+            </div>
+            <div class="comments-container"></div>
+        </div>
+    `).join('')
+}
