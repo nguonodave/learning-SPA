@@ -98,11 +98,16 @@ export async function checkAuthStatus() {
         if (response.ok) {
             document.getElementById('auth-forms').classList.add('hidden')
             document.getElementById('app-content').classList.remove('hidden')
+            return true // Return true when authenticated
         } else {
             document.getElementById('auth-forms').classList.remove('hidden')
             document.getElementById('app-content').classList.add('hidden')
+            return false // Return false when not authenticated
         }
     } catch (err) {
         console.error('Auth check failed:', err)
+        document.getElementById('auth-forms').classList.remove('hidden')
+        document.getElementById('app-content').classList.add('hidden')
+        return false // Return false on error
     }
 }
