@@ -50,28 +50,23 @@
     
     <div id="app-content" class="hidden">
         <button id="logout-btn">Logout</button>
-        <!-- Main app content will go here -->
-
-        <div id="app-content" class="hidden">
-            <button id="logout-btn">Logout</button>
-            
-            <div id="post-form" class="auth-form">
-                <h2>Create Post</h2>
-                <form id="create-post">
-                    <div>
-                        <textarea id="post-content" rows="4" cols="50" required></textarea>
-                    </div>
-                    <div>
-                        <input type="file" id="post-image" accept="image/*">
-                    </div>
-                    <button type="submit">Post</button>
-                </form>
-                <p id="post-error" class="error"></p>
-            </div>
-            
-            <div id="posts-container">
-                <!-- Posts will be loaded here -->
-            </div>
+        
+        <div id="post-form" class="auth-form">
+            <h2>Create Post</h2>
+            <form id="create-post">
+                <div>
+                    <textarea id="post-content" rows="4" cols="50" required></textarea>
+                </div>
+                <div>
+                    <input type="file" id="post-image" accept="image/*">
+                </div>
+                <button type="submit">Post</button>
+            </form>
+            <p id="post-error" class="error"></p>
+        </div>
+        
+        <div id="posts-container">
+            <!-- Posts will be loaded here -->
         </div>
     </div>
 
