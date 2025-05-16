@@ -35,10 +35,31 @@ export function setupPostForm() {
                 document.getElementById('post-content').value = ''
                 document.getElementById('post-image').value = ''
                 document.getElementById('post-error').textContent = ''
+                loadPosts()
             } catch (err) {
                 document.getElementById('post-error').textContent = 'Network error'
             }
         })
+    }
+}
+
+export async function loadPosts() {
+    const postsContainer = document.getElementById('posts-container')
+    if (!postsContainer) return
+    
+    try {
+        const response = await fetch('/api/posts', {
+            credentials: 'include'
+        })
+        
+        if (!response.ok) {
+            throw new Error('Failed to load posts')
+        }
+        
+        const posts = await response.json()
+        renderPosts(posts)
+    } catch (err) {
+        postsContainer.innerHTML = `<p class="error">Failed to load posts: ${err.message}</p>`
     }
 }
 
