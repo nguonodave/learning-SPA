@@ -61,12 +61,12 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 		// Return the created post
 		var createdPost Post
 		err = db.QueryRow(`
-			SELECT p.id, p.user_id, u.username, p.content, p.image_path, p.created_at
+			SELECT p.id, p.user_id, u.username, p.content, p.created_at
 			FROM posts p
 			JOIN users u ON p.user_id = u.id
 			WHERE p.id = ?`, postID).
 			Scan(&createdPost.ID, &createdPost.UserID, &createdPost.Username,
-				&createdPost.Content, &createdPost.ImagePath, &createdPost.CreatedAt)
+				&createdPost.Content, &createdPost.CreatedAt)
 		if err != nil {
 			http.Error(w, "Failed to fetch created post", http.StatusInternalServerError)
 			return
@@ -85,7 +85,7 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		rows, err := db.Query(`
-			SELECT p.id, p.user_id, u.username, p.content, p.image_path, p.created_at
+			SELECT p.id, p.user_id, u.username, p.content, p.created_at
 			FROM posts p
 			JOIN users u ON p.user_id = u.id
 			ORDER BY p.created_at DESC
@@ -101,7 +101,7 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 		for rows.Next() {
 			var post Post
 			err := rows.Scan(&post.ID, &post.UserID, &post.Username,
-				&post.Content, &post.ImagePath, &post.CreatedAt)
+				&post.Content, &post.CreatedAt)
 			if err != nil {
 				log.Println("add post to array error", err)
 				http.Error(w, "Failed to read posts", http.StatusInternalServerError)
