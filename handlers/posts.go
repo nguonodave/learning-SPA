@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,7 +29,7 @@ type Post struct {
 	UserID    string    `json:"user_id"`
 	Username  string    `json:"username"`
 	Content   string    `json:"content"`
-	ImagePath string    `json:"image_path,omitempty"`
+	ImagePath *string   `json:"image_path,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -46,25 +47,26 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Check if this is a multipart form (file upload)
+		// Variables to hold post data
 		var content string
-		var imagePath string
+		var imagePath sql.NullString
 
-		if r.Header.Get("Content-Type") == "application/json" {
+		// Check content type
+		contentType := r.Header.Get("Content-Type")
+
+		if strings.HasPrefix(contentType, "application/json") {
 			// JSON request (text-only post)
 			var post struct {
 				Content string `json:"content"`
 			}
-			err = json.NewDecoder(r.Body).Decode(&post)
-			if err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
 				http.Error(w, "Invalid request", http.StatusBadRequest)
 				return
 			}
 			content = post.Content
-		} else {
+		} else if strings.HasPrefix(contentType, "multipart/form-data") {
 			// Multipart form (possible file upload)
-			err := r.ParseMultipartForm(maxUploadSize)
-			if err != nil {
+			if err := r.ParseMultipartForm(maxUploadSize); err != nil {
 				http.Error(w, "File too large or invalid form", http.StatusBadRequest)
 				return
 			}
@@ -74,20 +76,21 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			if err == nil {
 				defer file.Close()
 
-				// Validate file size
+				// Validate file
 				if fileHeader.Size > maxUploadSize {
 					http.Error(w, "File too large (max 20MB)", http.StatusBadRequest)
 					return
 				}
 
-				// Validate file type
 				buff := make([]byte, 512)
-				_, err = file.Read(buff)
-				if err != nil {
+				if _, err := file.Read(buff); err != nil {
 					http.Error(w, "Invalid file", http.StatusBadRequest)
 					return
 				}
-				file.Seek(0, 0) // Reset file pointer
+				if _, err := file.Seek(0, 0); err != nil {
+					http.Error(w, "File error", http.StatusInternalServerError)
+					return
+				}
 
 				filetype := http.DetectContentType(buff)
 				if filetype != "image/jpeg" && filetype != "image/png" && filetype != "image/gif" {
@@ -95,12 +98,12 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 					return
 				}
 
-				// Create a new file name
+				// Generate unique filename
 				ext := filepath.Ext(fileHeader.Filename)
 				newFileName := uuid.New().String() + ext
 				newFilePath := filepath.Join(uploadDir, newFileName)
 
-				// Create the file
+				// Save file
 				dst, err := os.Create(newFilePath)
 				if err != nil {
 					http.Error(w, "Failed to save file", http.StatusInternalServerError)
@@ -108,22 +111,23 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 				}
 				defer dst.Close()
 
-				// Copy the uploaded file to the destination
-				_, err = io.Copy(dst, file)
-				if err != nil {
+				if _, err := io.Copy(dst, file); err != nil {
 					http.Error(w, "Failed to save file", http.StatusInternalServerError)
 					return
 				}
 
-				imagePath = newFileName
+				imagePath = sql.NullString{String: newFileName, Valid: true}
 			} else if err != http.ErrMissingFile {
 				http.Error(w, "Invalid file upload", http.StatusBadRequest)
 				return
 			}
+		} else {
+			http.Error(w, "Unsupported content type", http.StatusBadRequest)
+			return
 		}
 
-		// Basic validation
-		if len(content) == 0 && imagePath == "" {
+		// Validate at least content or image exists
+		if content == "" && !imagePath.Valid {
 			http.Error(w, "Post must have content or an image", http.StatusBadRequest)
 			return
 		}
@@ -137,20 +141,35 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Return the created post
-		var createdPost Post
+		// Fetch the complete post data to return to client
+		var createdPost struct {
+			ID        string    `json:"id"`
+			UserID    string    `json:"user_id"`
+			Username  string    `json:"username"`
+			Content   string    `json:"content"`
+			ImagePath *string   `json:"image_path,omitempty"`
+			CreatedAt time.Time `json:"created_at"`
+		}
+		var dbImagePath sql.NullString
+
 		err = db.QueryRow(`
-			SELECT p.id, p.user_id, u.username, p.content, p.image_path, p.created_at
-			FROM posts p
-			JOIN users u ON p.user_id = u.id
-			WHERE p.id = ?`, postID).
+            SELECT p.id, p.user_id, u.username, p.content, p.image_path, p.created_at
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.id = ?`, postID).
 			Scan(&createdPost.ID, &createdPost.UserID, &createdPost.Username,
-				&createdPost.Content, &createdPost.ImagePath, &createdPost.CreatedAt)
+				&createdPost.Content, &dbImagePath, &createdPost.CreatedAt)
 		if err != nil {
 			http.Error(w, "Failed to fetch created post", http.StatusInternalServerError)
 			return
 		}
 
+		// Convert NullString to *string
+		if dbImagePath.Valid {
+			createdPost.ImagePath = &dbImagePath.String
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(createdPost)
 	}
@@ -179,13 +198,24 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 		posts := []Post{}
 		for rows.Next() {
 			var post Post
+			var imagePath sql.NullString // Use sql.NullString to handle NULL values
+
 			err := rows.Scan(&post.ID, &post.UserID, &post.Username,
-				&post.Content, &post.ImagePath, &post.CreatedAt)
+				&post.Content, &imagePath, &post.CreatedAt)
 			if err != nil {
 				log.Println("add post to array error", err)
 				http.Error(w, "Failed to read posts", http.StatusInternalServerError)
 				return
 			}
+
+			// Convert NullString to *string
+			// in templates the *string will be implicitly derefrenced
+			if imagePath.Valid {
+				post.ImagePath = &imagePath.String
+			} else {
+				post.ImagePath = nil
+			}
+
 			posts = append(posts, post)
 		}
 
