@@ -10,11 +10,16 @@ export function setupPostForm() {
             try {
                 let response
                 if (imageFile) {
-                    // We'll implement image upload later
-                    alert("Image upload will be implemented in the next step")
-                    return
+                    const formData = new FormData()
+                    formData.append('content', content)
+                    formData.append('image', imageFile)
+                    
+                    response = await fetch('/api/posts/create', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    })
                 } else {
-                    // Text-only post
                     response = await fetch('/api/posts/create', {
                         method: 'POST',
                         headers: {
@@ -31,11 +36,16 @@ export function setupPostForm() {
                     return
                 }
                 
-                // Clear form and reload posts
+                // Get the created post from the response
+                const createdPost = await response.json()
+                
+                // Clear form
                 document.getElementById('post-content').value = ''
                 document.getElementById('post-image').value = ''
                 document.getElementById('post-error').textContent = ''
-                loadPosts()
+                
+                // Add the new post to the UI without reloading all posts
+                addPostToUI(createdPost)
             } catch (err) {
                 document.getElementById('post-error').textContent = 'Network error'
             }
@@ -43,6 +53,35 @@ export function setupPostForm() {
     }
 }
 
+function addPostToUI(post) {
+    const postsContainer = document.getElementById('posts-container')
+    if (!postsContainer) return
+    
+    // Create post element
+    const postElement = document.createElement('div')
+    postElement.className = 'post'
+    postElement.dataset.id = post.id
+    postElement.innerHTML = `
+        <h3>${post.username}</h3>
+        <p>${post.content}</p>
+        ${post.image_path ? `<img src="/uploads/${post.image_path}" alt="Post image" style="max-width: 100%;">` : ''}
+        <small>${new Date(post.created_at).toLocaleString()}</small>
+        <div class="post-actions">
+            <button class="like-btn">Like</button>
+            <button class="comment-btn">Comment</button>
+        </div>
+        <div class="comments-container"></div>
+    `
+    
+    // Insert at the top of the posts container
+    if (postsContainer.firstChild) {
+        postsContainer.insertBefore(postElement, postsContainer.firstChild)
+    } else {
+        postsContainer.appendChild(postElement)
+    }
+}
+
+// Modify loadPosts to use addPostToUI
 export async function loadPosts() {
     const postsContainer = document.getElementById('posts-container')
     if (!postsContainer) return
@@ -57,32 +96,18 @@ export async function loadPosts() {
         }
         
         const posts = await response.json()
-        renderPosts(posts)
+        
+        // Clear existing posts
+        postsContainer.innerHTML = ''
+        
+        // Add each post to UI
+        posts.forEach(post => addPostToUI(post))
+        
+        // Show message if no posts
+        if (posts.length === 0) {
+            postsContainer.innerHTML = '<p>No posts yet. Be the first to post!</p>'
+        }
     } catch (err) {
         postsContainer.innerHTML = `<p class="error">Failed to load posts: ${err.message}</p>`
     }
-}
-
-function renderPosts(posts) {
-    const postsContainer = document.getElementById('posts-container')
-    if (!postsContainer) return
-    
-    if (posts.length === 0) {
-        postsContainer.innerHTML = '<p>No posts yet. Be the first to post!</p>'
-        return
-    }
-    
-    postsContainer.innerHTML = posts.map(post => `
-        <div class="post" data-id="${post.id}">
-            <h3>${post.username}</h3>
-            <p>${post.content}</p>
-            ${post.image_path ? `<img src="/uploads/${post.image_path}" alt="Post image" style="max-width: 100%;">` : ''}
-            <small>${new Date(post.created_at).toLocaleString()}</small>
-            <div class="post-actions">
-                <button class="like-btn">Like</button>
-                <button class="comment-btn">Comment</button>
-            </div>
-            <div class="comments-container"></div>
-        </div>
-    `).join('')
 }
