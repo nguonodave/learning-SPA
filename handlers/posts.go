@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -52,6 +53,7 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 		_, err = db.Exec("INSERT INTO posts (id, user_id, content) VALUES (?, ?, ?)",
 			postID, userID, post.Content)
 		if err != nil {
+			log.Println("create post error", err)
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			return
 		}
@@ -89,6 +91,7 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 			ORDER BY p.created_at DESC
 			LIMIT 50`)
 		if err != nil {
+			log.Println("list post error", err)
 			http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
 			return
 		}
@@ -100,6 +103,7 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 			err := rows.Scan(&post.ID, &post.UserID, &post.Username,
 				&post.Content, &post.ImagePath, &post.CreatedAt)
 			if err != nil {
+				log.Println("add post to array error", err)
 				http.Error(w, "Failed to read posts", http.StatusInternalServerError)
 				return
 			}
