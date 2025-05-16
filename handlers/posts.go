@@ -94,7 +94,7 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		var posts []Post
+		posts := []Post{}
 		for rows.Next() {
 			var post Post
 			err := rows.Scan(&post.ID, &post.UserID, &post.Username,
