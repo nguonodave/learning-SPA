@@ -30,7 +30,7 @@ export function setupAuthForms() {
                 document.getElementById('reg-password').value = ''
                 alert('Registration successful! Please login.')
             } catch (err) {
-                document.getElementById('register-error').textContent = 'Network error'
+                document.getElementById('register-error').textContent = 'Error while registering, try again later'
             }
         })
     }
@@ -62,7 +62,7 @@ export function setupAuthForms() {
                 document.getElementById('app-content').classList.remove('hidden')
                 checkAuthStatus()
             } catch (err) {
-                document.getElementById('login-error').textContent = 'Network error'
+                document.getElementById('login-error').textContent = 'Invalid username or password'
             }
         })
     }
