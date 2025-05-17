@@ -1,3 +1,5 @@
+import { loadPosts, setupPostForm } from './posts.js'
+
 export function setupAuthForms() {
     const registerForm = document.getElementById('register')
     const loginForm = document.getElementById('login')
@@ -47,7 +49,8 @@ export function setupAuthForms() {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
                 })
                 
                 if (!response.ok) {
@@ -60,7 +63,8 @@ export function setupAuthForms() {
                 document.getElementById('login-error').textContent = ''
                 document.getElementById('auth-forms').classList.add('hidden')
                 document.getElementById('app-content').classList.remove('hidden')
-                checkAuthStatus()
+                setupPostForm()
+                loadPosts()
             } catch (err) {
                 document.getElementById('login-error').textContent = 'Invalid username or password'
             }
