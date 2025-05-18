@@ -42,40 +42,37 @@ export function setupPostForm() {
         
         const content = document.getElementById('post-content').value.trim();
         const imageFile = document.getElementById('post-image').files[0];
+        const checkedCategories = document.querySelectorAll('#category-selector input:checked')
         
         // Clear previous errors
         postError.textContent = '';
+
+        if (!content) {
+            postError.textContent = 'Post content cannot be empty';
+            return;
+        }
+        if (checkedCategories.length === 0) {
+            postError.textContent = 'Please select at least one category';
+            return;
+        }
         
         try {
-            let response;
-            
+            const formData = new FormData();
+            formData.append('content', content);
+            // Get selected categories
+            checkedCategories.forEach(checkbox => {
+                formData.append('categories', checkbox.value);
+            });
             if (imageFile) {
                 // Handle image upload
-                const formData = new FormData();
-                formData.append('content', content);
                 formData.append('image', imageFile);
-                
-                response = await fetch('/api/posts/create', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                });
-            } else {
-                // Handle text-only post
-                if (!content) {
-                    postError.textContent = 'Post content cannot be empty';
-                    return;
-                }
-                
-                response = await fetch('/api/posts/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ content }),
-                    credentials: 'include'
-                });
             }
+
+            const response = await fetch('/api/posts/create', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            })
 
             if (!response.ok) {
                 const error = await response.json().catch(() => ({ message: 'Unknown error' }));
@@ -89,6 +86,7 @@ export function setupPostForm() {
             // Clear form
             document.getElementById('post-content').value = '';
             document.getElementById('post-image').value = '';
+            document.querySelectorAll('#category-selector input:checked').forEach(cb => cb.checked = false);
             
             // Add new post to UI
             addPostToUI(createdPost);

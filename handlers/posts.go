@@ -141,6 +141,18 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		// Handle categories if they exist
+		if categories := r.Form["categories"]; len(categories) > 0 {
+			for _, catID := range categories {
+				_, err := db.Exec("INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)",
+					postID, catID)
+				if err != nil {
+					log.Printf("Failed to add category %s to post %s: %v", catID, postID, err)
+
+				}
+			}
+		}
+
 		// Fetch the complete post data to return to client
 		var createdPost struct {
 			ID        string    `json:"id"`
