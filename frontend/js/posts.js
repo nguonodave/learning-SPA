@@ -137,13 +137,33 @@ export async function loadPosts() {
     }
 }
 
-function addPostToUI(post) {
+async function addPostToUI(post) {
     const postsContainer = document.getElementById('posts-container');
     if (!postsContainer) return;
     
     const postElement = document.createElement('div');
     postElement.className = 'post';
     postElement.dataset.id = post.id;
+
+    // Fetch categories for this post
+    let categories = [];
+    try {
+        const response = await fetch(`/api/posts/${post.id}/categories`);
+        if (response.ok) {
+            categories = await response.json();
+        }
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+    }
+
+    // Add categories to post HTML
+    const categoriesHtml = categories.length > 0 
+    ? `<div class="post-categories">
+            ${categories.map(cat => 
+                `<span class="category-tag">${escapeHtml(cat.name)}</span>`
+            ).join('')}
+        </div>`
+    : '';
     
     postElement.innerHTML = `
         <div class="post-header">
@@ -158,6 +178,9 @@ function addPostToUI(post) {
                 </div>
             ` : ''}
         </div>
+
+        ${categoriesHtml}
+
         <div class="post-actions">
             <button class="like-btn" data-post-id="${post.id}">
                 <span class="like-count">0</span> Likes

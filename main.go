@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"postSPA/db"
 	"postSPA/handlers"
+	"strings"
 )
 
 func main() {
@@ -32,6 +33,13 @@ func main() {
 	http.HandleFunc("/api/posts", handlers.ListPostsHandler(database))
 	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(database))
 	http.HandleFunc("/api/categories", handlers.ListCategoriesHandler(database))
+	http.HandleFunc("/api/posts/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/categories") {
+			handlers.GetPostCategoriesHandler(database)(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	})
 
 	// Serve frontend (JS modules, HTML)
 	http.Handle("/", http.FileServer(http.Dir("./frontend")))
