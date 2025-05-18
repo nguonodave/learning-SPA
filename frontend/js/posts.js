@@ -1,4 +1,35 @@
-// frontend/js/posts.js
+async function loadCategories() {
+    try {
+        const response = await fetch('/api/categories', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error('Failed to load categories');
+        
+        const categories = await response.json();
+        renderCategorySelector(categories);
+    } catch (err) {
+        const container = document.getElementById('category-selector');
+        if (container) {
+            container.innerHTML = 
+                `<p class="error">Failed to load categories: ${err.message}</p>`;
+        }
+    }
+}
+
+function renderCategorySelector(categories) {
+    const container = document.getElementById('category-selector');
+    if (!container) return;
+    
+    container.innerHTML = categories.map(cat => `
+        <label class="category-option">
+            <input type="checkbox" name="categories" value="${cat.id}">
+            ${escapeHtml(cat.name)}
+        </label>
+    `).join('');
+}
+
+loadCategories()
 
 export function setupPostForm() {
     const postForm = document.getElementById('create-post');
