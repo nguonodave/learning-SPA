@@ -19,6 +19,11 @@ func main() {
 	defer database.Close()
 	log.Println("✅ Database initialized and schema applied.")
 
+	if err := db.SeedCategories(database); err != nil {
+		log.Fatalf("Failed to seed categories: %v", err)
+	}
+	log.Println("✅ Categories seeded")
+
 	// Auth handlers
 	http.HandleFunc("/api/register", handlers.RegisterHandler(database))
 	http.HandleFunc("/api/login", handlers.LoginHandler(database))
