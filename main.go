@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/api/check-auth", handlers.AuthCheckHandler(database))
 	http.HandleFunc("/api/posts", handlers.ListPostsHandler(database))
 	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(database))
+	http.HandleFunc("/api/categories", handlers.ListCategoriesHandler(database))
 
 	// Serve frontend (JS modules, HTML)
 	http.Handle("/", http.FileServer(http.Dir("./frontend")))
