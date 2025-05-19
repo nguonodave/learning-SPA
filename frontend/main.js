@@ -13,7 +13,7 @@ async function initializeApp() {
         console.log("Checking authentication status...") // This will now log
         const authenticated = await checkAuthStatus()
         console.log("Authenticated:", authenticated) // This will show the status
-        
+
         if (authenticated) {
             // Setup post form and load posts if authenticated
             setupPostForm()
