@@ -191,7 +191,7 @@ func GetPostCategoriesHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postID := strings.TrimPrefix(r.URL.Path, "/api/posts/")
 		postID = strings.TrimSuffix(postID, "/categories")
-		
+
 		rows, err := db.Query(`
 			SELECT c.id, c.name 
 			FROM categories c
