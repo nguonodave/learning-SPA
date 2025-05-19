@@ -32,7 +32,13 @@ func main() {
 	http.HandleFunc("/api/check-auth", handlers.AuthCheckHandler(database))
 	http.HandleFunc("/api/posts", handlers.ListPostsHandler(database))
 	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(database))
-	http.HandleFunc("/api/categories", handlers.ListCategoriesHandler(database))
+	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/posts") {
+			handlers.GetCategoryPostsHandler(database)(w, r)
+		} else {
+			handlers.ListCategoriesHandler(database)(w, r)
+		}
+	})
 	http.HandleFunc("/api/posts/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/categories") {
 			handlers.GetPostCategoriesHandler(database)(w, r)

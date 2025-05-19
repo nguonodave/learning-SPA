@@ -8,6 +8,7 @@ async function loadCategories() {
         
         const categories = await response.json();
         renderCategorySelector(categories);
+        setupCategoryNavigation(categories)
     } catch (err) {
         const container = document.getElementById('category-selector');
         if (container) {
@@ -27,6 +28,71 @@ function renderCategorySelector(categories) {
             ${escapeHtml(cat.name)}
         </label>
     `).join('');
+}
+
+export function setupCategoryNavigation(categories) {
+    const categoryList = document.getElementById('category-list');
+    const viewAllBtn = document.getElementById('view-all-posts');
+    
+    if (!categoryList || !viewAllBtn) return;
+    
+    categoryList.innerHTML = categories.map(cat => `
+        <button class="category-filter" data-category-id="${cat.id}">
+            ${escapeHtml(cat.name)}
+        </button>
+    `).join('');
+
+    // Add click handlers
+    document.querySelectorAll('.category-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Highlight selected category
+            document.querySelectorAll('.category-filter').forEach(el => {
+                el.classList.remove('active');
+            });
+            btn.classList.add('active');
+            
+            // Load posts for this category
+            loadPostsByCategory(btn.dataset.categoryId);
+        });
+    });
+    
+    // Handle "View All" button
+    viewAllBtn.addEventListener('click', () => {
+        loadPosts();
+        document.querySelectorAll('.category-filter.active').forEach(el => {
+            el.classList.remove('active');
+        });
+    });
+}
+
+async function loadPostsByCategory(categoryId) {
+    const postsContainer = document.getElementById('posts-container');
+    if (!postsContainer) return;
+    
+    try {
+        postsContainer.innerHTML = '<p>Loading posts...</p>';
+        
+        const response = await fetch(`/api/categories/${categoryId}/posts`);
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+        
+        const posts = await response.json();
+        
+        postsContainer.innerHTML = '';
+        if (posts.length === 0) {
+            postsContainer.innerHTML = '<p>No posts in this category yet.</p>';
+            return;
+        }
+        
+        posts.forEach(post => addPostToUI(post));
+    } catch (err) {
+        console.error('Failed to load category posts:', err);
+        postsContainer.innerHTML = `
+            <p class="error">
+                Failed to load posts: ${err.message}
+                <button onclick="window.location.reload()">Retry</button>
+            </p>
+        `;
+    }
 }
 
 loadCategories()
