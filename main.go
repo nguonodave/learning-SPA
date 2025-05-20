@@ -42,8 +42,6 @@ func main() {
 	http.HandleFunc("/api/posts/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/react") {
 			handlers.ReactToPostHandler(database)(w, r)
-		} else if strings.HasSuffix(r.URL.Path, "/categories") {
-			handlers.GetPostCategoriesHandler(database)(w, r)
 		} else {
 			http.NotFound(w, r)
 		}

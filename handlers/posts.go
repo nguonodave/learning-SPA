@@ -187,36 +187,29 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func GetPostCategoriesHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		postID := strings.TrimPrefix(r.URL.Path, "/api/posts/")
-		postID = strings.TrimSuffix(postID, "/categories")
-
-		rows, err := db.Query(`
-			SELECT c.id, c.name 
+func GetPostCategories(db *sql.DB, id string) ([]string, error) {
+	rows, err := db.Query(`
+			SELECT c.name 
 			FROM categories c
 			JOIN post_categories pc ON c.id = pc.category_id
 			WHERE pc.post_id = ?
-			ORDER BY c.name`, postID)
-		if err != nil {
-			http.Error(w, "Failed to fetch categories", http.StatusInternalServerError)
-			return
-		}
-		defer rows.Close()
+			`, id)
+	if err != nil {
 
-		var categories []Category
-		for rows.Next() {
-			var cat Category
-			if err := rows.Scan(&cat.ID, &cat.Name); err != nil {
-				http.Error(w, "Failed to read categories", http.StatusInternalServerError)
-				return
-			}
-			categories = append(categories, cat)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(categories)
+		return nil, err
 	}
+	defer rows.Close()
+
+	categories := []string{}
+	for rows.Next() {
+		var cat string
+		if err := rows.Scan(&cat); err != nil {
+			log.Fatalf("Error scanning category: %v", err)
+		}
+		categories = append(categories, cat)
+	}
+
+	return categories, nil
 }
 
 func ListPostsHandler(db *sql.DB) http.HandlerFunc {
