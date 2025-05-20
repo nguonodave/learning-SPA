@@ -13,35 +13,35 @@ func main() {
 	sqlitePath := "app.db"
 	schemaFile := "schema/schema.sql"
 
-	database, initDbErr := db.InitDB(sqlitePath, schemaFile)
+	initDbErr := db.InitDB(sqlitePath, schemaFile)
 	if initDbErr != nil {
 		log.Fatalf("DB init failed: %v", initDbErr)
 	}
-	defer database.Close()
+	defer db.Db.Close()
 	log.Println("✅ Database initialized and schema applied.")
 
-	if err := db.SeedCategories(database); err != nil {
+	if err := db.SeedCategories(db.Db); err != nil {
 		log.Fatalf("Failed to seed categories: %v", err)
 	}
 	log.Println("✅ Categories seeded")
 
 	// Auth handlers
-	http.HandleFunc("/api/register", handlers.RegisterHandler(database))
-	http.HandleFunc("/api/login", handlers.LoginHandler(database))
-	http.HandleFunc("/api/logout", handlers.LogoutHandler(database))
-	http.HandleFunc("/api/check-auth", handlers.AuthCheckHandler(database))
-	http.HandleFunc("/api/posts", handlers.ListPostsHandler(database))
-	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(database))
+	http.HandleFunc("/api/register", handlers.RegisterHandler(db.Db))
+	http.HandleFunc("/api/login", handlers.LoginHandler(db.Db))
+	http.HandleFunc("/api/logout", handlers.LogoutHandler(db.Db))
+	http.HandleFunc("/api/check-auth", handlers.AuthCheckHandler(db.Db))
+	http.HandleFunc("/api/posts", handlers.ListPostsHandler(db.Db))
+	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(db.Db))
 	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/posts") {
-			handlers.GetCategoryPostsHandler(database)(w, r)
+			handlers.GetCategoryPostsHandler(db.Db)(w, r)
 		} else {
-			handlers.ListCategoriesHandler(database)(w, r)
+			handlers.ListCategoriesHandler(db.Db)(w, r)
 		}
 	})
 	http.HandleFunc("/api/posts/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/react") {
-			handlers.ReactToPostHandler(database)(w, r)
+			handlers.ReactToPostHandler(db.Db)(w, r)
 		} else {
 			http.NotFound(w, r)
 		}
