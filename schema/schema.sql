@@ -70,3 +70,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Add to existing reactions table
+CREATE INDEX IF NOT EXISTS idx_reactions_post_id ON reactions(post_id);
+CREATE INDEX IF NOT EXISTS idx_reactions_comment_id ON reactions(comment_id);
