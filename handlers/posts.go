@@ -214,6 +214,20 @@ func GetPostCategories(db *sql.DB, id string) ([]string, error) {
 	return categories, nil
 }
 
+func GetReactionCountsForPost(db *sql.DB, id string) (int, int, error) {
+	query := `
+		SELECT COUNT(*) FILTER (WHERE r.type = 'like'), COUNT(*) FILTER (WHERE r.type = 'dislike')
+		FROM reactions r
+		WHERE r.post_id = ?
+	`
+	var likeCount, dislikeCount int
+	err := db.QueryRow(query, id).Scan(&likeCount, &dislikeCount)
+	if err != nil {
+		return 0, 0, err
+	}
+	return likeCount, dislikeCount, nil
+}
+
 func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
