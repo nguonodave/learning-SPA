@@ -190,40 +190,42 @@ export async function loadPosts() {
         }
 
         postsContainer.innerHTML = posts.map(post => `
-        <div class="post-header">
-            <h3 class="post-username">${post.username}</h3>
-            <small class="post-time">${formatDate(post.created_at)}</small>
-        </div>
-        <div class="post-content">
-            <p>${escapeHtml(post.content)}</p>
-            ${post.image_path ? `
-                <div class="post-image">
-                    <img src="/uploads/${post.image_path}" alt="Post image">
+            <div class="post" data-id="${post.id}">
+                <div class="post-header">
+                    <h3 class="post-username">${post.username}</h3>
+                    <small class="post-time">${formatDate(post.created_at)}</small>
                 </div>
-            ` : ''}
-        </div>
+                <div class="post-content">
+                    <p>${escapeHtml(post.content)}</p>
+                    ${post.image_path ? `
+                        <div class="post-image">
+                            <img src="/uploads/${post.image_path}" alt="Post image">
+                        </div>
+                    ` : ''}
+                </div>
 
-        ${post.categories.length > 0 ? 
-            `<div class="post-categories">
-                ${post.categories.map(cat =>
-                `<span class="category-tag">${escapeHtml(cat)}</span>`
-                ).join('')}
-            </div>`
-                : ''
-            }
+                ${post.categories.length > 0 ? 
+                    `<div class="post-categories">
+                        ${post.categories.map(cat =>
+                        `<span class="category-tag">${escapeHtml(cat)}</span>`
+                        ).join('')}
+                    </div>`
+                        : ''
+                    }
 
-        <div class="post-actions">
-            <button class="like-btn" data-post-id="${post.id}">
-                <span class="like-count">0</span> Likes
-            </button>
-            <button class="dislike-btn" data-post-id="${post.id}">
-                <span class="dislike-count">0</span> Dislikes
-            </button>
-            <button class="comment-btn" data-post-id="${post.id}">
-                <span class="comment-count">0</span> Comments
-            </button>
-        </div>
-        <div class="comments-container" data-post-id="${post.id}"></div>
+                <div class="post-actions">
+                    <button class="like-btn" data-post-id="${post.id}">
+                        <span class="like-count">0</span> Likes
+                    </button>
+                    <button class="dislike-btn" data-post-id="${post.id}">
+                        <span class="dislike-count">0</span> Dislikes
+                    </button>
+                    <button class="comment-btn" data-post-id="${post.id}">
+                        <span class="comment-count">0</span> Comments
+                    </button>
+                </div>
+                <div class="comments-container" data-post-id="${post.id}"></div>
+            </div>
     `).join('')
     } catch (err) {
         console.error('Failed to load posts:', err);
@@ -305,6 +307,7 @@ function setupPostReactions() {
 
 async function handleReaction(postId, type) {
     const postElement = document.querySelector(`.post[data-id="${postId}"]`);
+    // console.log(postElement)
     if (!postElement) return;
 
     try {
