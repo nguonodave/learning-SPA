@@ -251,6 +251,9 @@ async function addPostToUI(post) {
             <button class="like-btn" data-post-id="${post.id}">
                 <span class="like-count">0</span> Likes
             </button>
+            <button class="dislike-btn" data-post-id="${post.id}">
+                <span class="dislike-count">0</span> Dislikes
+            </button>
             <button class="comment-btn" data-post-id="${post.id}">
                 <span class="comment-count">0</span> Comments
             </button>
@@ -264,9 +267,55 @@ async function addPostToUI(post) {
     } else {
         postsContainer.appendChild(postElement);
     }
-
-    // TODO: Add event listeners for like/comment buttons
 }
+
+function setupPostReactions() {
+    document.addEventListener('click', async (e) => {
+        if (e.target.closest('.like-btn')) {
+            const postId = e.target.closest('[data-post-id]').dataset.postId;
+            await handleReaction(postId, 'like');
+        } else if (e.target.closest('.dislike-btn')) {
+            const postId = e.target.closest('[data-post-id]').dataset.postId;
+            await handleReaction(postId, 'dislike');
+        }
+    });
+}
+
+async function handleReaction(postId, type) {
+    const postElement = document.querySelector(`.post[data-id="${postId}"]`);
+    if (!postElement) return;
+
+    try {
+        const response = await fetch(`/api/posts/${postId}/react`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ type }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Reaction failed');
+
+        const { likes, dislikes, userVote } = await response.json();
+        // updateReactionUI(postId, counts);
+
+        // Update like button
+        const likeBtn = postElement.querySelector('.like-btn');
+        likeBtn.classList.toggle('active', userVote === 1);
+        likeBtn.querySelector('.like-count').textContent = likes;
+
+        // Update dislike button
+        const dislikeBtn = postElement.querySelector('.dislike-btn');
+        dislikeBtn.classList.toggle('active', userVote === -1);
+        dislikeBtn.querySelector('.dislike-count').textContent = dislikes;
+    } catch (err) {
+        console.error('Reaction error:', err);
+    }
+}
+
+// Call this in your initialization
+setupPostReactions();
 
 // Helper functions
 function formatDate(dateString) {
