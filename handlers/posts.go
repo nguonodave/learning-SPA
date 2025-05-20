@@ -25,13 +25,15 @@ func init() {
 }
 
 type Post struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	Username   string    `json:"username"`
-	Content    string    `json:"content"`
-	ImagePath  *string   `json:"image_path,omitempty"`
-	Categories []string  `json:"categories"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID            string    `json:"id"`
+	UserID        string    `json:"user_id"`
+	Username      string    `json:"username"`
+	Content       string    `json:"content"`
+	ImagePath     *string   `json:"image_path,omitempty"`
+	Categories    []string  `json:"categories"`
+	LikesCount    int       `json:"likes_count"`
+	DislikesCount int       `json:"dislike_count"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 func CreatePostHandler(db *sql.DB) http.HandlerFunc {
