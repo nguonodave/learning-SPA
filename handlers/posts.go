@@ -32,7 +32,7 @@ type Post struct {
 	ImagePath     *string   `json:"image_path,omitempty"`
 	Categories    []string  `json:"categories"`
 	LikesCount    int       `json:"likes_count"`
-	DislikesCount int       `json:"dislike_count"`
+	DislikesCount int       `json:"dislikes_count"`
 	CreatedAt     time.Time `json:"created_at"`
 }
 
