@@ -211,22 +211,11 @@ async function addPostToUI(post) {
     postElement.className = 'post';
     postElement.dataset.id = post.id;
 
-    // Fetch categories for this post
-    let categories = [];
-    try {
-        const response = await fetch(`/api/posts/${post.id}/categories`);
-        if (response.ok) {
-            categories = await response.json();
-        }
-    } catch (err) {
-        console.error('Failed to load categories:', err);
-    }
-
     // Add categories to post HTML
-    const categoriesHtml = categories.length > 0
+    const categoriesHtml = post.categories.length > 0
         ? `<div class="post-categories">
-            ${categories.map(cat =>
-            `<span class="category-tag">${escapeHtml(cat.name)}</span>`
+            ${post.categories.map(cat =>
+            `<span class="category-tag">${escapeHtml(cat)}</span>`
         ).join('')}
         </div>`
         : '';
