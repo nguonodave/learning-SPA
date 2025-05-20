@@ -175,6 +175,14 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			createdPost.ImagePath = &dbImagePath.String
 		}
 
+		categories, categErrs := GetPostCategories(db, createdPost.ID)
+		if categErrs != nil {
+			log.Println("error getting categories from db", err)
+			http.Error(w, "An error occured, kindly check back later", http.StatusInternalServerError)
+		}
+
+		createdPost.Categories = categories
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(createdPost)
