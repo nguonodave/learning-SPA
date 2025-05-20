@@ -215,10 +215,10 @@ export async function loadPosts() {
 
                 <div class="post-actions">
                     <button class="like-btn" data-post-id="${post.id}">
-                        <span class="like-count">0</span> Likes
+                        <span class="like-count">${post.likes_count}</span> Likes
                     </button>
                     <button class="dislike-btn" data-post-id="${post.id}">
-                        <span class="dislike-count">0</span> Dislikes
+                        <span class="dislike-count">${post.dislike_count}</span> Dislikes
                     </button>
                     <button class="comment-btn" data-post-id="${post.id}">
                         <span class="comment-count">0</span> Comments
