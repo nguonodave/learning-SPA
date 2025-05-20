@@ -25,12 +25,13 @@ func init() {
 }
 
 type Post struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	Username  string    `json:"username"`
-	Content   string    `json:"content"`
-	ImagePath *string   `json:"image_path,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         string    `json:"id"`
+	UserID     string    `json:"user_id"`
+	Username   string    `json:"username"`
+	Content    string    `json:"content"`
+	ImagePath  *string   `json:"image_path,omitempty"`
+	Categories []string  `json:"categories"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func CreatePostHandler(db *sql.DB) http.HandlerFunc {
@@ -154,14 +155,7 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		// Fetch the complete post data to return to client
-		var createdPost struct {
-			ID        string    `json:"id"`
-			UserID    string    `json:"user_id"`
-			Username  string    `json:"username"`
-			Content   string    `json:"content"`
-			ImagePath *string   `json:"image_path,omitempty"`
-			CreatedAt time.Time `json:"created_at"`
-		}
+		var createdPost Post
 		var dbImagePath sql.NullString
 
 		err = db.QueryRow(`
@@ -252,6 +246,14 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 			} else {
 				post.ImagePath = nil
 			}
+
+			categories, categErrs := GetPostCategories(db, post.ID)
+			if categErrs != nil {
+				log.Println("error getting categories from db", err)
+				http.Error(w, "An error occured, kindly check back later", http.StatusInternalServerError)
+			}
+
+			post.Categories = categories
 
 			posts = append(posts, post)
 		}
