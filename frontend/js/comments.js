@@ -70,7 +70,7 @@ document.addEventListener('click', (e) => {
     // Handle post body click
     const postBody = e.target.closest('.post-body');
     if (postBody) {
-        const postId = postBody.getAttribute('data-post-id');
+        const postId = postBody.closest('.post').getAttribute('data-id');
         if (postId) {
             revealComments(postId);
         }
