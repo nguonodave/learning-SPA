@@ -226,7 +226,7 @@ export async function loadPosts() {
                 </div>
                 <div class="comments-container" data-post-id="${post.id}">
                     <form id="comment-form">
-                        <input type="text" name="comment-input" class="comment-input" id="comment-input" placeholder="Write a comment..." required>
+                        <input type="text" name="comment-input" class="comment-input" placeholder="Write a comment..." required>
                         <button type="submit">Submit</button>
                     </form>
                 </div>
@@ -289,7 +289,7 @@ async function addPostToUI(post) {
         </div>
         <div class="comments-container" data-post-id="${post.id}">
             <form id="comment-form">
-                <input type="text" name="comment-input" class="comment-input" id="comment-input" placeholder="Write a comment..." required>
+                <input type="text" name="comment-input" class="comment-input" placeholder="Write a comment..." required>
                 <button type="submit">Submit</button>
             </form>
         </div>
