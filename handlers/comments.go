@@ -17,11 +17,6 @@ type Comment struct {
 	Username  string    `json:"username"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"createdAt"`
-	Reactions struct {
-		Likes    int `json:"likes"`
-		Dislikes int `json:"dislikes"`
-		UserVote int `json:"userVote"`
-	} `json:"reactions"`
 }
 
 func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
