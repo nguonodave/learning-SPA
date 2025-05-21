@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -80,6 +81,13 @@ func GetCategoryPostsHandler(db *sql.DB) http.HandlerFunc {
 			if imagePath.Valid {
 				post.ImagePath = &imagePath.String
 			}
+
+			categories, categErrs := GetPostCategories(db, post.ID)
+			if categErrs != nil {
+				log.Println("error getting categories from db in GetCategoryPostsHandler", categErrs)
+				http.Error(w, "An error occured, kindly check back later", http.StatusInternalServerError)
+			}
+			post.Categories = categories
 
 			posts = append(posts, post)
 		}
