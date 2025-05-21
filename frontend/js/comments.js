@@ -29,6 +29,9 @@ async function createComment(postId, content) {
 
         const commentsCount = await response.json()
 
+        const commentBtn = document.querySelector(`.comment-btn[data-post-id="${postId}"]`);
+        commentBtn.querySelector('.comment-count').textContent = commentsCount
+
         console.log(commentsCount)
     } catch (error) {
         console.log("comment creation error", error)
