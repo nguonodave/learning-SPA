@@ -224,7 +224,12 @@ export async function loadPosts() {
                         <span class="comment-count">0</span> Comments
                     </button>
                 </div>
-                <div class="comments-container" data-post-id="${post.id}"></div>
+                <div class="comments-container" data-post-id="${post.id}">
+                    <form id="comment-form">
+                        <input type="text" name="comment-input" class="comment-input" id="comment-input" placeholder="Write a comment..." required>
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
             </div>
     `).join('')
     } catch (err) {
@@ -282,7 +287,12 @@ async function addPostToUI(post) {
                 <span class="comment-count">0</span> Comments
             </button>
         </div>
-        <div class="comments-container" data-post-id="${post.id}"></div>
+        <div class="comments-container" data-post-id="${post.id}">
+            <form id="comment-form">
+                <input type="text" name="comment-input" class="comment-input" id="comment-input" placeholder="Write a comment..." required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
     `;
 
     // Insert at the top of the container
