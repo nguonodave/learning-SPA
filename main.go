@@ -33,16 +33,21 @@ func main() {
 	http.HandleFunc("/api/posts", handlers.ListPostsHandler(db.Db))
 	http.HandleFunc("/api/posts/create", handlers.CreatePostHandler(db.Db))
 	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/posts") {
-			handlers.GetCategoryPostsHandler(db.Db)(w, r)
-		} else {
+		path := r.URL.Path
+		switch {
+		case path == "/api/categories" || path == "/api/categories/":
 			handlers.ListCategoriesHandler(db.Db)(w, r)
+		case strings.HasSuffix(path, "/posts"):
+			handlers.GetCategoryPostsHandler(db.Db)(w, r)
+		default:
+			http.NotFound(w, r)
 		}
 	})
 	http.HandleFunc("/api/posts/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/react") {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/react"):
 			handlers.ReactToPostHandler(db.Db)(w, r)
-		} else {
+		default:
 			http.NotFound(w, r)
 		}
 	})
