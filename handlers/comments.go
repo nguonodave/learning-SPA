@@ -38,6 +38,7 @@ func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		request.Content = strings.TrimSpace(request.Content)
 		if len(request.Content) == 0 {
 			http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
 			return
