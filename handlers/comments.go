@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -55,14 +56,10 @@ func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		// Return the created comment
-		commentCount := 0
-		err = db.QueryRow(`
-			SELECT COUNT(*) as comment_count
-			FROM comments
-			WHERE post_id = ?`, postID).
-			Scan(&commentCount)
-		if err != nil {
-			http.Error(w, "Failed to fetch comment", http.StatusInternalServerError)
+		commentCount, commentCountErr := GetPostCommentCount(db, postID)
+		if commentCountErr != nil {
+			log.Fatalf("error in GetPostCommentCount: %v", commentCountErr)
+			http.Error(w, "An error occured try again later", http.StatusInternalServerError)
 			return
 		}
 
@@ -109,4 +106,17 @@ func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(comments)
 	}
+}
+
+func GetPostCommentCount(db *sql.DB, postID string) (int, error) {
+	commentCount := 0
+	err := db.QueryRow(`
+			SELECT COUNT(*) as comment_count
+			FROM comments
+			WHERE post_id = ?`, postID).
+		Scan(&commentCount)
+	if err != nil {
+		return 0, err
+	}
+	return commentCount, nil
 }
