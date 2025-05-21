@@ -6,8 +6,10 @@ export function setupCommentForm() {
             const postId = e.target.closest('[data-post-id]').dataset.postId
             const content = form.querySelector('.comment-input').value
             console.log(postId, content)
-            
+
             createComment(postId, content)
+
+            form.querySelector('.comment-input').value = ''
         }
     });
 }
