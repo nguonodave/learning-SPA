@@ -71,3 +71,42 @@ func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(commentCount)
 	}
 }
+
+func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		postID := strings.TrimPrefix(r.URL.Path, "/api/posts/")
+		postID = strings.TrimSuffix(postID, "/comments")
+
+		rows, err := db.Query(`
+			SELECT c.id, c.post_id, c.user_id, u.username, c.content, c.created_at
+			FROM comments c
+			JOIN users u ON c.user_id = u.id
+			WHERE c.post_id = ?
+			ORDER BY c.created_at DESC`, postID)
+		if err != nil {
+			http.Error(w, "Failed to fetch comments", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var comments []Comment
+		for rows.Next() {
+			var comment Comment
+			err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID,
+				&comment.Username, &comment.Content, &comment.CreatedAt)
+			if err != nil {
+				http.Error(w, "Failed to read comments", http.StatusInternalServerError)
+				return
+			}
+			comments = append(comments, comment)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(comments)
+	}
+}
