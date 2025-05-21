@@ -222,7 +222,7 @@ export async function loadPosts() {
                         <span class="dislike-count">${post.dislikes_count}</span> Dislikes
                     </button>
                     <button class="comment-btn" data-post-id="${post.id}">
-                        <span class="comment-count">0</span> Comments
+                        <span class="comment-count">${post.comments_count}</span> Comments
                     </button>
                 </div>
                 <div class="comments-container" data-post-id="${post.id}">

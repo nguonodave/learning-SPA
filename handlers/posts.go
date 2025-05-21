@@ -33,6 +33,7 @@ type Post struct {
 	Categories    []string  `json:"categories"`
 	LikesCount    int       `json:"likes_count"`
 	DislikesCount int       `json:"dislikes_count"`
+	CommentsCount int       `json:"comments_count"`
 	CreatedAt     time.Time `json:"created_at"`
 }
 
@@ -285,6 +286,15 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 			}
 			post.LikesCount = likesCount
 			post.DislikesCount = dislikesCount
+
+			commentsCount, commentCountErr := GetPostCommentCount(db, post.ID)
+			if commentCountErr != nil {
+				log.Fatalf("error in GetPostCommentCount: %v", commentCountErr)
+				http.Error(w, "An error occured try again later", http.StatusInternalServerError)
+				return
+			}
+
+			post.CommentsCount = commentsCount
 
 			posts = append(posts, post)
 		}
