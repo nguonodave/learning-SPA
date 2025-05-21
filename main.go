@@ -50,6 +50,8 @@ func main() {
 		case strings.HasSuffix(r.URL.Path, "/comments"):
 			if r.Method == http.MethodPost {
 				handlers.CreateCommentHandler(db.Db)(w, r)
+			} else {
+				handlers.GetCommentsHandler(db.Db)(w, r)
 			}
 		default:
 			http.NotFound(w, r)
