@@ -273,13 +273,13 @@ func ListPostsHandler(db *sql.DB) http.HandlerFunc {
 
 			categories, categErrs := GetPostCategories(db, post.ID)
 			if categErrs != nil {
-				log.Println("error getting categories from db", err)
+				log.Println("error getting categories from db", categErrs)
 				http.Error(w, "An error occured, kindly check back later", http.StatusInternalServerError)
 			}
 			post.Categories = categories
 
 			likesCount, dislikesCount, reactionsErr := GetReactionCountsForPost(db, post.ID)
-			if categErrs != nil {
+			if reactionsErr != nil {
 				log.Println("error getting reactions count from db", reactionsErr)
 				http.Error(w, "An error occured, kindly check back later", http.StatusInternalServerError)
 			}
