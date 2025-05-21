@@ -55,14 +55,12 @@ func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		// Return the created comment
-		var comment Comment
+		commentCount := 0
 		err = db.QueryRow(`
-			SELECT c.id, c.post_id, c.user_id, u.username, c.content, c.created_at
-			FROM comments c
-			JOIN users u ON c.user_id = u.id
-			WHERE c.id = ?`, commentID).
-			Scan(&comment.ID, &comment.PostID, &comment.UserID,
-				&comment.Username, &comment.Content, &comment.CreatedAt)
+			SELECT COUNT(*) as comment_count
+			FROM comments
+			WHERE post_id = ?`, postID).
+			Scan(&commentCount)
 		if err != nil {
 			http.Error(w, "Failed to fetch comment", http.StatusInternalServerError)
 			return
@@ -70,6 +68,6 @@ func CreateCommentHandler(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(comment)
+		json.NewEncoder(w).Encode(commentCount)
 	}
 }
