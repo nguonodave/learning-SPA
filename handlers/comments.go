@@ -91,7 +91,7 @@ func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		var comments []Comment
+		comments := []Comment{}
 		for rows.Next() {
 			var comment Comment
 			err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID,
