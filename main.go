@@ -47,6 +47,10 @@ func main() {
 		switch {
 		case strings.HasSuffix(r.URL.Path, "/react"):
 			handlers.ReactToPostHandler(db.Db)(w, r)
+		case strings.HasSuffix(r.URL.Path, "/comments"):
+			if r.Method == http.MethodPost {
+				handlers.CreateCommentHandler(db.Db)(w, r)
+			}
 		default:
 			http.NotFound(w, r)
 		}

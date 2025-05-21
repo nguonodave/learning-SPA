@@ -1,6 +1,7 @@
 import { setHeadingText } from './js/ui.js'
 import { setupAuthForms, checkAuthStatus } from './js/auth.js'
 import { setupPostForm, loadPosts } from './js/posts.js'
+import { setupCommentForm } from './js/comments.js'
 
 setHeadingText("PostApp")
 
@@ -18,6 +19,7 @@ async function initializeApp() {
             // Setup post form and load posts if authenticated
             setupPostForm()
             loadPosts()
+            setupCommentForm()
         }
     } catch (err) {
         console.error("Initialization error:", err)
