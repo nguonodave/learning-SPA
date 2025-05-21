@@ -53,7 +53,7 @@ async function revealComments(postId) {
         commentsList.innerHTML = ''
 
         if (comments.length === 0) {
-            container.innerHTML = '<p>No comments yet</p>';
+            commentsList.innerHTML = '<p>No comments yet</p>';
         } else {
             // comments.forEach(comment => addCommentToUI(comment, container));
             commentsList.innerHTML = comments.map(comment => `
