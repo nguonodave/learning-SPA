@@ -230,6 +230,7 @@ export async function loadPosts() {
                         <input type="text" name="comment-input" class="comment-input" placeholder="Write a comment..." required>
                         <button type="submit">Submit</button>
                     </form>
+                    <div class="comments-list"></div>
                 </div>
             </div>
     `).join('')
@@ -295,6 +296,7 @@ async function addPostToUI(post) {
                 <input type="text" name="comment-input" class="comment-input" placeholder="Write a comment..." required>
                 <button type="submit">Submit</button>
             </form>
+            <div class="comments-list"></div>
         </div>
     `;
 
