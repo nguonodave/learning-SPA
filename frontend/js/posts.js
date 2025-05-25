@@ -30,7 +30,7 @@ function renderCategorySelector(categories) {
     `).join('');
 }
 
-export function setupCategoryNavigation(categories) {
+function setupCategoryNavigation(categories) {
     const categoryList = document.getElementById('category-list');
     const viewAllBtn = document.getElementById('view-all-posts');
 
